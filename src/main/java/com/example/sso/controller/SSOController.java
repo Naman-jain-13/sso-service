@@ -5,11 +5,16 @@ import com.example.sso.service.JwtTokenService;
 import com.example.sso.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Map;
 
 @Controller
 public class SSOController {
@@ -59,6 +64,24 @@ public class SSOController {
     @GetMapping("/home")
     public String home() {
         return "home";
+    }
+
+    @GetMapping("/validate")
+    @ResponseBody
+    public ResponseEntity<?> validateToken(
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(Map.of("valid", false, "reason", "Missing or invalid Authorization header"));
+        }
+
+        String token = authHeader.substring(7);
+
+        if (jwtTokenService.validateToken(token)) {
+            String username = jwtTokenService.getUsernameFromToken(token);
+            return ResponseEntity.ok(Map.of("valid", true, "username", username));
+        }
+
+        return ResponseEntity.status(401).body(Map.of("valid", false, "reason", "Token expired or invalid"));
     }
 
     @GetMapping("/logout")

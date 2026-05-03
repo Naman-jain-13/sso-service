@@ -21,6 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserService {
         this.passwordEncoder = passwordEncoder;
         users.put("john", passwordEncoder.encode("password123"));
         users.put("jane", passwordEncoder.encode("password456"));
+        users.put("naman", passwordEncoder.encode("naman@sso123"));
     }
 
     @Override
